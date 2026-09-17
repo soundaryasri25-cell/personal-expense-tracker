@@ -31,6 +31,29 @@ $transactions = $transactionService->getUserTransactions($userId, $search, $type
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <script>
+        function confirmDelete(event, deleteUrl) {
+            event.preventDefault();
+
+            Swal.fire({
+                title: 'Delete transaction?',
+                text: 'This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = deleteUrl;
+                }
+            });
+
+            return false;
+        }
+    </script>
+
 </head>
 
 <body class="bg-light">
@@ -248,7 +271,7 @@ $transactions = $transactionService->getUserTransactions($userId, $search, $type
                                             <a
                                                 href="delete_transaction.php?id=<?php echo $row['id']; ?>"
                                                 class="btn btn-danger btn-sm"
-                                                onclick="return confirm('Are you sure you want to delete this transaction?');">
+                                                onclick="return confirmDelete(event, this.href);">
                                                 Delete
                                             </a>
 
