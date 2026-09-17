@@ -1,29 +1,14 @@
 <?php
 
 session_start();
-require_once "config/database.php";
+require_once __DIR__ . '/../config/database.php';
 
-// Check login
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
-}
+$auth = new User($conn);
+$auth->requireLogin();
+$transactionService = new Transaction($conn);
+$userId = (int) $_SESSION['user_id'];
 
-$user_id = $_SESSION['user_id'];
-
-// Get user's transactions
-$query = "SELECT id, type, category, amount, description, transaction_date
-          FROM transactions
-          WHERE user_id = ?
-          ORDER BY transaction_date DESC, id DESC";
-
-$stmt = mysqli_prepare($conn, $query);
-
-mysqli_stmt_bind_param($stmt, "i", $user_id);
-
-mysqli_stmt_execute($stmt);
-
-$result = mysqli_stmt_get_result($stmt);
+$transactions = $transactionService->getUserTransactions($userId);
 
 ?>
 
@@ -135,11 +120,11 @@ $result = mysqli_stmt_get_result($stmt);
 
                             <?php
 
-                            if (mysqli_num_rows($result) > 0) {
+                            if (count($transactions) > 0) {
 
                                 $count = 1;
 
-                                while ($row = mysqli_fetch_assoc($result)) {
+                                foreach ($transactions as $row) {
 
                             ?>
 

@@ -1,61 +1,16 @@
 <?php
 
 session_start();
-require_once "config/database.php";
+require_once 'config/database.php';
 
-// Check login
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
-}
+$auth = new User($conn);
+$auth->requireLogin();
+$transactionService = new Transaction($conn);
+$userId = (int) $_SESSION['user_id'];
 
-$user_id = $_SESSION['user_id'];
-
-$search = isset($_GET['search']) ? trim($_GET['search']) : "";
-$type = isset($_GET['type']) ? $_GET['type'] : "";
-
-$query = "SELECT id, type, category, amount, description, transaction_date
-          FROM transactions
-          WHERE user_id = ?";
-
-$params = [$user_id];
-$types = "i";
-
-
-// Search filter
-if (!empty($search)) {
-
-    $query .= " AND (category LIKE ? OR description LIKE ?)";
-
-    $search_value = "%" . $search . "%";
-
-    $params[] = $search_value;
-    $params[] = $search_value;
-
-    $types .= "ss";
-}
-
-
-// Income / Expense filter
-if ($type == "income" || $type == "expense") {
-
-    $query .= " AND type = ?";
-
-    $params[] = $type;
-
-    $types .= "s";
-}
-
-
-$query .= " ORDER BY transaction_date DESC, id DESC";
-
-$stmt = mysqli_prepare($conn, $query);
-
-mysqli_stmt_bind_param($stmt, $types, ...$params);
-
-mysqli_stmt_execute($stmt);
-
-$result = mysqli_stmt_get_result($stmt);
+$search = trim($_GET['search'] ?? '');
+$type = $_GET['type'] ?? '';
+$transactions = $transactionService->getUserTransactions($userId, $search, $type);
 
 ?>
 
@@ -88,16 +43,14 @@ $result = mysqli_stmt_get_result($stmt);
     ?>
 
     <?php
-    if (isset($_SESSION['message'])) {
-        $msg = $_SESSION['message'];
+    $msg = Helper::getFlash('message');
+    if ($msg !== '') {
         echo "<script>document.addEventListener('DOMContentLoaded', function() { Swal.fire({ icon: 'success', title: 'Success', text: " . json_encode($msg) . " }); });</script>";
-        unset($_SESSION['message']);
     }
 
-    if (isset($_SESSION['error'])) {
-        $err = $_SESSION['error'];
+    $err = Helper::getFlash('error');
+    if ($err !== '') {
         echo "<script>document.addEventListener('DOMContentLoaded', function() { Swal.fire({ icon: 'error', title: 'Error', text: " . json_encode($err) . " }); });</script>";
-        unset($_SESSION['error']);
     }
     ?>
 
@@ -228,7 +181,7 @@ $result = mysqli_stmt_get_result($stmt);
 
                             <tr>
 
-                                <th>#</th>
+                                <th>S.No</th>
                                 <th>Type</th>
                                 <th>Category</th>
                                 <th>Amount</th>
@@ -244,11 +197,11 @@ $result = mysqli_stmt_get_result($stmt);
 
                             <?php
 
-                            if (mysqli_num_rows($result) > 0) {
+                            if (count($transactions) > 0) {
 
                                 $count = 1;
 
-                                while ($row = mysqli_fetch_assoc($result)) {
+                                foreach ($transactions as $row) {
 
                             ?>
 

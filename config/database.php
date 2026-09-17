@@ -1,17 +1,16 @@
 <?php
 
-$host = "localhost";
-$username = "root";
-$password = "";
-$database = "expense_tracker";
+require_once __DIR__ . '/../classes/Database.php';
+require_once __DIR__ . '/../classes/Helper.php';
+require_once __DIR__ . '/../classes/Validator.php';
+require_once __DIR__ . '/../classes/User.php';
+require_once __DIR__ . '/../classes/Transaction.php';
 
-$conn = mysqli_connect(
-    $host,
-    $username,
-    $password,
-    $database
+$database = new Database(
+    'localhost',
+    'root',
+    '',
+    'expense_tracker'
 );
 
-if (!$conn) {
-    die("Database connection failed: " . mysqli_connect_error());
-}
+$conn = $database->getConnection();

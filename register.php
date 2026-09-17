@@ -1,62 +1,29 @@
 <?php
 
-require_once "config/database.php";
+require_once 'config/database.php';
 session_start();
 
-$message = "";
+$user = new User($conn);
+$message = '';
 
 if (isset($_POST['register'])) {
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
 
-    $name = trim($_POST['name']);
-    $email = trim($_POST['email']);
-    $password = $_POST['password'];
-
-    if ($name == "" || $email == "" || $password == "") {
-        $message = "All fields are required.";
+    if (!Validator::required([$name, $email, $password])) {
+        $message = 'All fields are required.';
+    } elseif (!Validator::email($email)) {
+        $message = 'Please enter a valid email address.';
+    } elseif (!Validator::password($password)) {
+        $message = 'Password must be at least 6 characters.';
+    } elseif ($user->emailExists($email)) {
+        $message = 'Email already exists.';
+    } elseif ($user->register($name, $email, $password)) {
+        header('Location: login.php');
+        exit;
     } else {
-
-        // Check email already exists
-        $check_sql = "SELECT id FROM users WHERE email = ?";
-        $stmt = mysqli_prepare($conn, $check_sql);
-
-        mysqli_stmt_bind_param($stmt, "s", $email);
-        mysqli_stmt_execute($stmt);
-
-        $result = mysqli_stmt_get_result($stmt);
-
-        if (mysqli_num_rows($result) > 0) {
-
-            $message = "Email already exists.";
-        } else {
-
-            // Hash password
-            $hashed_password = password_hash(
-                $password,
-                PASSWORD_DEFAULT
-            );
-
-            $insert_sql = "INSERT INTO users (name, email, password)
-                           VALUES (?, ?, ?)";
-
-            $stmt = mysqli_prepare($conn, $insert_sql);
-
-            mysqli_stmt_bind_param(
-                $stmt,
-                "sss",
-                $name,
-                $email,
-                $hashed_password
-            );
-
-            if (mysqli_stmt_execute($stmt)) {
-
-                header("Location: login.php");
-                exit;
-            } else {
-
-                $message = "Registration failed.";
-            }
-        }
+        $message = 'Registration failed.';
     }
 }
 ?>

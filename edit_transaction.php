@@ -1,107 +1,56 @@
 <?php
 
 session_start();
-require_once "config/database.php";
+require_once 'config/database.php';
 
-// Check login
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+$auth = new User($conn);
+$auth->requireLogin();
+$transactionService = new Transaction($conn);
+$userId = (int) $_SESSION['user_id'];
+
+if (!isset($_GET['id']) || !ctype_digit((string) $_GET['id'])) {
+    header('Location: transactions.php');
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
-
-// Check transaction ID
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: transactions.php");
-    exit();
-}
-
-$transaction_id = $_GET['id'];
-
-$error = "";
-$success = "";
-
-// Get transaction details
-$query = "SELECT * FROM transactions
-          WHERE id = ? AND user_id = ?";
-
-$stmt = mysqli_prepare($conn, $query);
-
-mysqli_stmt_bind_param(
-    $stmt,
-    "ii",
-    $transaction_id,
-    $user_id
-);
-
-mysqli_stmt_execute($stmt);
-
-$result = mysqli_stmt_get_result($stmt);
-
-$transaction = mysqli_fetch_assoc($result);
+$transactionId = (int) $_GET['id'];
+$transaction = $transactionService->getTransactionById($transactionId, $userId);
 
 if (!$transaction) {
-    header("Location: transactions.php");
+    header('Location: transactions.php');
     exit();
 }
 
+$error = '';
 
-// Update transaction
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $type = $_POST['type'] ?? '';
+    $category = trim($_POST['category'] ?? '');
+    $amount = $_POST['amount'] ?? '';
+    $description = trim($_POST['description'] ?? '');
+    $transactionDate = $_POST['transaction_date'] ?? '';
 
-    $type = $_POST['type'];
-    $category = trim($_POST['category']);
-    $amount = $_POST['amount'];
-    $description = trim($_POST['description']);
-    $transaction_date = $_POST['transaction_date'];
-
-    if (
-        empty($type) ||
-        empty($category) ||
-        empty($amount) ||
-        empty($transaction_date)
-    ) {
-
-        $error = "Please fill all required fields.";
-
-    } elseif ($amount <= 0) {
-
-        $error = "Amount must be greater than 0.";
-
+    if (!Validator::required([$type, $category, $amount, $transactionDate])) {
+        $error = 'Please fill all required fields.';
+    } elseif (!Validator::transactionType($type)) {
+        $error = 'Please select a valid transaction type.';
+    } elseif (!Validator::amount($amount)) {
+        $error = 'Amount must be greater than 0.';
+    } elseif (!Validator::date($transactionDate)) {
+        $error = 'Please enter a valid date.';
+    } elseif ($transactionService->updateTransaction(
+        $transactionId,
+        $userId,
+        $type,
+        $category,
+        (float) $amount,
+        $description,
+        $transactionDate
+    )) {
+        header('Location: transactions.php');
+        exit();
     } else {
-
-        $update_query = "UPDATE transactions
-                         SET type = ?,
-                             category = ?,
-                             amount = ?,
-                             description = ?,
-                             transaction_date = ?
-                         WHERE id = ? AND user_id = ?";
-
-        $stmt = mysqli_prepare($conn, $update_query);
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "ssdssii",
-            $type,
-            $category,
-            $amount,
-            $description,
-            $transaction_date,
-            $transaction_id,
-            $user_id
-        );
-
-        if (mysqli_stmt_execute($stmt)) {
-
-            header("Location: transactions.php");
-            exit();
-
-        } else {
-
-            $error = "Failed to update transaction.";
-        }
+        $error = 'Failed to update transaction.';
     }
 }
 
@@ -120,8 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+        rel="stylesheet">
 
 </head>
 
@@ -167,8 +115,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <select
                                     name="type"
                                     class="form-select"
-                                    required
-                                >
+                                    required>
 
                                     <option
                                         value="income"
@@ -176,8 +123,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                         if ($transaction['type'] == 'income') {
                                             echo 'selected';
                                         }
-                                        ?>
-                                    >
+                                        ?>>
                                         Income
                                     </option>
 
@@ -187,8 +133,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                         if ($transaction['type'] == 'expense') {
                                             echo 'selected';
                                         }
-                                        ?>
-                                    >
+                                        ?>>
                                         Expense
                                     </option>
 
@@ -210,8 +155,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     name="category"
                                     class="form-control"
                                     value="<?php echo htmlspecialchars($transaction['category']); ?>"
-                                    required
-                                >
+                                    required>
 
                             </div>
 
@@ -231,8 +175,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     step="0.01"
                                     min="0.01"
                                     value="<?php echo $transaction['amount']; ?>"
-                                    required
-                                >
+                                    required>
 
                             </div>
 
@@ -248,8 +191,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <textarea
                                     name="description"
                                     class="form-control"
-                                    rows="3"
-                                ><?php echo htmlspecialchars($transaction['description']); ?></textarea>
+                                    rows="3"><?php echo htmlspecialchars($transaction['description']); ?></textarea>
 
                             </div>
 
@@ -267,23 +209,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     name="transaction_date"
                                     class="form-control"
                                     value="<?php echo $transaction['transaction_date']; ?>"
-                                    required
-                                >
+                                    required>
 
                             </div>
 
 
                             <button
                                 type="submit"
-                                class="btn btn-primary"
-                            >
+                                class="btn btn-primary">
                                 Update Transaction
                             </button>
 
                             <a
                                 href="transactions.php"
-                                class="btn btn-secondary"
-                            >
+                                class="btn btn-secondary">
                                 Cancel
                             </a>
 
@@ -298,7 +237,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
 
     </div>
-<?php require_once "includes/footer.php"; ?>
+    <?php require_once "includes/footer.php"; ?>
 
 </body>
 

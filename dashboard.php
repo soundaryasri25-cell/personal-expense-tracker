@@ -1,104 +1,19 @@
 <?php
 
 session_start();
-require_once "config/database.php";
+require_once 'config/database.php';
 
-// Check login
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
-}
+$auth = new User($conn);
+$auth->requireLogin();
+$transactionService = new Transaction($conn);
+$userId = (int) $_SESSION['user_id'];
 
-$user_id = $_SESSION['user_id'];
-$user_name = $_SESSION['user_name'];
-
-// Get Total Income
-$income_query = "SELECT SUM(amount) AS total_income 
-                 FROM transactions 
-                 WHERE user_id = ? AND type = 'income'";
-
-$stmt = mysqli_prepare($conn, $income_query);
-mysqli_stmt_bind_param($stmt, "i", $user_id);
-mysqli_stmt_execute($stmt);
-
-$result = mysqli_stmt_get_result($stmt);
-$income_data = mysqli_fetch_assoc($result);
-
-$total_income = $income_data['total_income'] ?? 0;
-
-
-// Get Total Expense
-$expense_query = "SELECT SUM(amount) AS total_expense 
-                  FROM transactions 
-                  WHERE user_id = ? AND type = 'expense'";
-
-$stmt = mysqli_prepare($conn, $expense_query);
-mysqli_stmt_bind_param($stmt, "i", $user_id);
-mysqli_stmt_execute($stmt);
-
-$result = mysqli_stmt_get_result($stmt);
-$expense_data = mysqli_fetch_assoc($result);
-
-$total_expense = $expense_data['total_expense'] ?? 0;
-
-
-// Calculate Balance
-$balance = $total_income - $total_expense;
-
-// Current month
-$current_month = date('Y-m');
-
-// Get current month income
-$monthly_income_query = "SELECT SUM(amount) AS monthly_income
-                         FROM transactions
-                         WHERE user_id = ?
-                         AND type = 'income'
-                         AND DATE_FORMAT(transaction_date, '%Y-%m') = ?";
-
-$stmt = mysqli_prepare($conn, $monthly_income_query);
-
-mysqli_stmt_bind_param(
-    $stmt,
-    "is",
-    $user_id,
-    $current_month
-);
-
-mysqli_stmt_execute($stmt);
-
-$result = mysqli_stmt_get_result($stmt);
-
-$monthly_income_data = mysqli_fetch_assoc($result);
-
-$monthly_income = $monthly_income_data['monthly_income'] ?? 0;
-
-
-// Get current month expense
-$monthly_expense_query = "SELECT SUM(amount) AS monthly_expense
-                          FROM transactions
-                          WHERE user_id = ?
-                          AND type = 'expense'
-                          AND DATE_FORMAT(transaction_date, '%Y-%m') = ?";
-
-$stmt = mysqli_prepare($conn, $monthly_expense_query);
-
-mysqli_stmt_bind_param(
-    $stmt,
-    "is",
-    $user_id,
-    $current_month
-);
-
-mysqli_stmt_execute($stmt);
-
-$result = mysqli_stmt_get_result($stmt);
-
-$monthly_expense_data = mysqli_fetch_assoc($result);
-
-$monthly_expense = $monthly_expense_data['monthly_expense'] ?? 0;
-
-
-// Monthly balance
+$total_income = $transactionService->getTotalIncome($userId);
+$total_expense = $transactionService->getTotalExpense($userId);
+$balance = $transactionService->getBalance($userId);
+$currentMonth = date('Y-m');
+$monthly_income = $transactionService->getMonthlyTotal($userId, 'income', $currentMonth);
+$monthly_expense = $transactionService->getMonthlyTotal($userId, 'expense', $currentMonth);
 $monthly_balance = $monthly_income - $monthly_expense;
 ?>
 

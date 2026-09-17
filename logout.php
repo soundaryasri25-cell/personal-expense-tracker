@@ -1,15 +1,10 @@
 <?php
 
 session_start();
+require_once 'config/database.php';
 
-// Remove all session data
-session_unset();
+$auth = new User($conn);
+$auth->logout();
 
-// Destroy the session
-session_destroy();
-
-// Redirect to login page
-header("Location: login.php");
+header('Location: login.php');
 exit();
-
-?>

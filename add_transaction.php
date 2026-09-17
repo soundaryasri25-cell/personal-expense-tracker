@@ -1,65 +1,47 @@
 <?php
 
 session_start();
-require_once "config/database.php";
+require_once 'config/database.php';
 
-// Check login
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
-}
+$auth = new User($conn);
+$auth->requireLogin();
+$transactionService = new Transaction($conn);
+$userId = (int) $_SESSION['user_id'];
 
-$user_id = $_SESSION['user_id'];
+$message = '';
+$error = '';
 
-$message = "";
-$error = "";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $type = $_POST['type'] ?? '';
+    $category = trim($_POST['category'] ?? '');
+    $amount = $_POST['amount'] ?? '';
+    $description = trim($_POST['description'] ?? '');
+    $transactionDate = $_POST['transaction_date'] ?? '';
 
-    $type = $_POST['type'];
-    $category = trim($_POST['category']);
-    $amount = $_POST['amount'];
-    $description = trim($_POST['description']);
-    $transaction_date = $_POST['transaction_date'];
-
-    // Validation
-    if (
-        empty($type) ||
-        empty($category) ||
-        empty($amount) ||
-        empty($transaction_date)
-    ) {
-        $_SESSION['error'] = "Please fill all required fields.";
-    } elseif ($amount <= 0) {
-        $_SESSION['error'] = "Amount must be greater than 0.";
+    if (!Validator::required([$type, $category, $amount, $transactionDate])) {
+        Helper::setFlash('error', 'Please fill all required fields.');
+    } elseif (!Validator::transactionType($type)) {
+        Helper::setFlash('error', 'Please select a valid transaction type.');
+    } elseif (!Validator::amount($amount)) {
+        Helper::setFlash('error', 'Amount must be greater than 0.');
+    } elseif (!Validator::date($transactionDate)) {
+        Helper::setFlash('error', 'Please enter a valid date.');
     } else {
-
-        $query = "INSERT INTO transactions
-                  (user_id, type, category, amount, description, transaction_date)
-                  VALUES (?, ?, ?, ?, ?, ?)";
-
-        $stmt = mysqli_prepare($conn, $query);
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "issdss",
-            $user_id,
+        if ($transactionService->addTransaction(
+            $userId,
             $type,
             $category,
-            $amount,
+            (float) $amount,
             $description,
-            $transaction_date
-        );
-
-        if (mysqli_stmt_execute($stmt)) {
-
-            $_SESSION['message'] = "Transaction added successfully.";
+            $transactionDate
+        )) {
+            Helper::setFlash('message', 'Transaction added successfully.');
         } else {
-
-            $_SESSION['error'] = "Something went wrong. Please try again.";
+            Helper::setFlash('error', 'Something went wrong. Please try again.');
         }
     }
-    header("Location: transactions.php");
+    header('Location: transactions.php');
     exit();
 }
 
