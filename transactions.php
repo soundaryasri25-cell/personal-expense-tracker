@@ -37,7 +37,6 @@ $transactions = $transactionService->getUserTransactions($userId, $search, $type
 
             Swal.fire({
                 title: 'Delete transaction?',
-                text: 'This action cannot be undone.',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#dc3545',
