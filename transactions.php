@@ -58,10 +58,15 @@ $transactions = $transactionService->getUserTransactions($userId, $search, $type
     <div class="container mt-4">
 
         <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-3">
+                <h2>
+                    Transactions
+                </h2>
 
-            <h2>
-                Transactions
-            </h2>
+                <a href="add_transaction.php" class="btn btn-primary">
+                    + Add Transaction
+                </a>
+            </div>
 
             <a
                 href="dashboard.php"
