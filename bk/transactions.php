@@ -3,9 +3,10 @@
 session_start();
 require_once __DIR__ . '/../config/database.php';
 
-$auth = new User($conn);
+/** @var Database $db */
+$auth = new User($db);
 $auth->requireLogin();
-$transactionService = new Transaction($conn);
+$transactionService = new Transaction($db);
 $userId = (int) $_SESSION['user_id'];
 
 $transactions = $transactionService->getUserTransactions($userId);
@@ -25,8 +26,7 @@ $transactions = $transactionService->getUserTransactions($userId);
 
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+        rel="stylesheet">
 
 </head>
 
@@ -40,8 +40,7 @@ $transactions = $transactionService->getUserTransactions($userId);
 
             <a
                 href="dashboard.php"
-                class="navbar-brand"
-            >
+                class="navbar-brand">
                 Expense Tracker
             </a>
 
@@ -49,15 +48,13 @@ $transactions = $transactionService->getUserTransactions($userId);
 
                 <a
                     href="add_transaction.php"
-                    class="btn btn-primary btn-sm me-2"
-                >
+                    class="btn btn-primary btn-sm me-2">
                     + Add Transaction
                 </a>
 
                 <a
                     href="logout.php"
-                    class="btn btn-danger btn-sm"
-                >
+                    class="btn btn-danger btn-sm">
                     Logout
                 </a>
 
@@ -78,8 +75,7 @@ $transactions = $transactionService->getUserTransactions($userId);
 
             <a
                 href="dashboard.php"
-                class="btn btn-secondary"
-            >
+                class="btn btn-secondary">
                 Dashboard
             </a>
 
@@ -172,16 +168,14 @@ $transactions = $transactionService->getUserTransactions($userId);
 
                                             <a
                                                 href="edit_transaction.php?id=<?php echo $row['id']; ?>"
-                                                class="btn btn-warning btn-sm"
-                                            >
+                                                class="btn btn-warning btn-sm">
                                                 Edit
                                             </a>
 
                                             <a
                                                 href="delete_transaction.php?id=<?php echo $row['id']; ?>"
                                                 class="btn btn-danger btn-sm"
-                                                onclick="return confirm('Are you sure you want to delete this transaction?');"
-                                            >
+                                                onclick="return confirm('Are you sure you want to delete this transaction?');">
                                                 Delete
                                             </a>
 
@@ -189,20 +183,18 @@ $transactions = $transactionService->getUserTransactions($userId);
 
                                     </tr>
 
-                            <?php
+                                <?php
 
                                 }
-
                             } else {
 
-                            ?>
+                                ?>
 
                                 <tr>
 
                                     <td
                                         colspan="7"
-                                        class="text-center"
-                                    >
+                                        class="text-center">
                                         No transactions found.
                                     </td>
 

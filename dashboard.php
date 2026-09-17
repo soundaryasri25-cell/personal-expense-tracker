@@ -3,9 +3,9 @@
 session_start();
 require_once 'config/database.php';
 
-$auth = new User($conn);
+$auth = new User($db);
 $auth->requireLogin();
-$transactionService = new Transaction($conn);
+$transactionService = new Transaction($db);
 $userId = (int) $_SESSION['user_id'];
 
 $total_income = $transactionService->getTotalIncome($userId);

@@ -3,7 +3,7 @@
 require_once 'config/database.php';
 session_start();
 
-$user = new User($conn);
+$user = new User($db);
 $message = '';
 
 if (isset($_POST['register'])) {

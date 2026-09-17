@@ -3,9 +3,9 @@
 session_start();
 require_once 'config/database.php';
 
-$auth = new User($conn);
+$auth = new User($db);
 $auth->requireLogin();
-$transactionService = new Transaction($conn);
+$transactionService = new Transaction($db);
 $userId = (int) $_SESSION['user_id'];
 
 if (!isset($_GET['id']) || !ctype_digit((string) $_GET['id'])) {
@@ -171,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <input
                                     type="number"
                                     name="amount"
-                                    class="form-control"
+                                    class="form-control float"
                                     step="0.01"
                                     min="0.01"
                                     value="<?php echo $transaction['amount']; ?>"

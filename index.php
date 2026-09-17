@@ -3,7 +3,7 @@
 session_start();
 require_once 'config/database.php';
 
-$auth = new User($conn);
+$auth = new User($db);
 
 if ($auth->isLoggedIn()) {
     header("Location: dashboard.php");

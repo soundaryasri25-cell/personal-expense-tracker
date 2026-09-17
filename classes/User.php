@@ -2,41 +2,38 @@
 
 class User
 {
-    private mysqli $connection;
+    private Database $database;
 
-    public function __construct(mysqli $connection)
+    public function __construct(Database $database)
     {
-        $this->connection = $connection;
+        $this->database = $database;
     }
 
     public function register(string $name, string $email, string $password): bool
     {
         $query = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
-        $statement = $this->connection->prepare($query);
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-        $statement->bind_param('sss', $name, $email, $hashedPassword);
 
-        return $statement->execute();
+        return $this->database->execute(
+            $query,
+            'sss',
+            [$name, $email, $hashedPassword]
+        );
     }
 
     public function emailExists(string $email): bool
     {
         $query = 'SELECT id FROM users WHERE email = ? LIMIT 1';
-        $statement = $this->connection->prepare($query);
-        $statement->bind_param('s', $email);
-        $statement->execute();
-        $result = $statement->get_result();
+        $result = $this->database->find_by_sql($query, 's', [$email]);
 
-        return $result->num_rows === 1;
+        return count($result) === 1;
     }
 
     public function login(string $email, string $password): ?array
     {
         $query = 'SELECT id, name, email, password FROM users WHERE email = ? LIMIT 1';
-        $statement = $this->connection->prepare($query);
-        $statement->bind_param('s', $email);
-        $statement->execute();
-        $user = $statement->get_result()->fetch_assoc();
+        $users = $this->database->find_by_sql($query, 's', [$email]);
+        $user = $users[0] ?? null;
 
         if (!$user || !password_verify($password, $user['password'])) {
             return null;

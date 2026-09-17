@@ -2,11 +2,11 @@
 
 class Transaction
 {
-    private mysqli $connection;
+    private Database $database;
 
-    public function __construct(mysqli $connection)
+    public function __construct(Database $database)
     {
-        $this->connection = $connection;
+        $this->database = $database;
     }
 
     public function addTransaction(
@@ -20,18 +20,14 @@ class Transaction
         $query = 'INSERT INTO transactions
             (user_id, type, category, amount, description, transaction_date)
             VALUES (?, ?, ?, ?, ?, ?)';
-        $statement = $this->connection->prepare($query);
-        $statement->bind_param(
-            'issdss',
+        return $this->database->execute($query, 'issdss', [
             $userId,
             $type,
             $category,
             $amount,
             $description,
             $transactionDate
-        );
-
-        return $statement->execute();
+        ]);
     }
 
     public function updateTransaction(
@@ -46,9 +42,7 @@ class Transaction
         $query = 'UPDATE transactions
             SET type = ?, category = ?, amount = ?, description = ?, transaction_date = ?
             WHERE id = ? AND user_id = ?';
-        $statement = $this->connection->prepare($query);
-        $statement->bind_param(
-            'ssdssii',
+        return $this->database->execute($query, 'ssdssii', [
             $type,
             $category,
             $amount,
@@ -56,28 +50,21 @@ class Transaction
             $transactionDate,
             $id,
             $userId
-        );
-
-        return $statement->execute();
+        ]);
     }
 
     public function deleteTransaction(int $id, int $userId): bool
     {
         $query = 'DELETE FROM transactions WHERE id = ? AND user_id = ?';
-        $statement = $this->connection->prepare($query);
-        $statement->bind_param('ii', $id, $userId);
-
-        return $statement->execute();
+        return $this->database->execute($query, 'ii', [$id, $userId]);
     }
 
     public function getTransactionById(int $id, int $userId): ?array
     {
         $query = 'SELECT id, type, category, amount, description, transaction_date
             FROM transactions WHERE id = ? AND user_id = ? LIMIT 1';
-        $statement = $this->connection->prepare($query);
-        $statement->bind_param('ii', $id, $userId);
-        $statement->execute();
-        $transaction = $statement->get_result()->fetch_assoc();
+        $transactions = $this->database->find_by_sql($query, 'ii', [$id, $userId]);
+        $transaction = $transactions[0] ?? null;
 
         return $transaction ?: null;
     }
@@ -107,11 +94,7 @@ class Transaction
         }
 
         $query .= ' ORDER BY transaction_date DESC, id DESC';
-        $statement = $this->connection->prepare($query);
-        $this->bindParameters($statement, $types, $parameters);
-        $statement->execute();
-
-        return $statement->get_result()->fetch_all(MYSQLI_ASSOC);
+        return $this->database->find_by_sql($query, $types, $parameters);
     }
 
     public function getTotalIncome(int $userId): float
@@ -134,10 +117,8 @@ class Transaction
         $query = "SELECT COALESCE(SUM(amount), 0) AS total
             FROM transactions
             WHERE user_id = ? AND type = ? AND DATE_FORMAT(transaction_date, '%Y-%m') = ?";
-        $statement = $this->connection->prepare($query);
-        $statement->bind_param('iss', $userId, $type, $month);
-        $statement->execute();
-        $result = $statement->get_result()->fetch_assoc();
+        $rows = $this->database->find_by_sql($query, 'iss', [$userId, $type, $month]);
+        $result = $rows[0] ?? ['total' => 0];
 
         return (float) $result['total'];
     }
@@ -146,21 +127,9 @@ class Transaction
     {
         $query = 'SELECT COALESCE(SUM(amount), 0) AS total
             FROM transactions WHERE user_id = ? AND type = ?';
-        $statement = $this->connection->prepare($query);
-        $statement->bind_param('is', $userId, $type);
-        $statement->execute();
-        $result = $statement->get_result()->fetch_assoc();
+        $rows = $this->database->find_by_sql($query, 'is', [$userId, $type]);
+        $result = $rows[0] ?? ['total' => 0];
 
         return (float) $result['total'];
-    }
-
-    private function bindParameters(mysqli_stmt $statement, string $types, array &$parameters): void
-    {
-        $references = [];
-        foreach ($parameters as $index => &$parameter) {
-            $references[$index] = &$parameter;
-        }
-
-        $statement->bind_param($types, ...$references);
     }
 }

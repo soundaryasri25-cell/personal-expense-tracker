@@ -3,7 +3,7 @@
 session_start();
 require_once 'config/database.php';
 
-$auth = new User($conn);
+$auth = new User($db);
 $message = '';
 
 if (isset($_POST['login'])) {
