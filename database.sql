@@ -1,27 +1,19 @@
-CREATE TABLE IF NOT EXISTS users (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    UNIQUE KEY uq_users_email (email)
-) ENGINE=InnoDB;
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-CREATE TABLE IF NOT EXISTS transactions (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    user_id INT UNSIGNED NOT NULL,
+CREATE TABLE transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
     type ENUM('income', 'expense') NOT NULL,
     category VARCHAR(100) NOT NULL,
-    amount DECIMAL(12, 2) NOT NULL,
-    description TEXT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    description VARCHAR(255),
     transaction_date DATE NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    KEY idx_transactions_user_date (user_id, transaction_date),
-    KEY idx_transactions_user_type (user_id, type),
-    CONSTRAINT fk_transactions_user
-        FOREIGN KEY (user_id) REFERENCES users (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-) ENGINE=InnoDB;
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

@@ -33,7 +33,6 @@ $monthly_balance = $monthly_income - $monthly_expense;
 
     <?php
 
-    // Use common header
     require_once "includes/header.php";
 
     ?>
@@ -42,10 +41,8 @@ $monthly_balance = $monthly_income - $monthly_expense;
         <h2 class="mb-4">Dashboard</h2>
 
 
-        <!-- Summary Cards -->
         <div class="row">
 
-            <!-- Income -->
             <div class="col-md-4 mb-3">
 
                 <div class="card shadow-sm">
@@ -64,8 +61,6 @@ $monthly_balance = $monthly_income - $monthly_expense;
 
             </div>
 
-
-            <!-- Expense -->
             <div class="col-md-4 mb-3">
 
                 <div class="card shadow-sm">
@@ -84,8 +79,6 @@ $monthly_balance = $monthly_income - $monthly_expense;
 
             </div>
 
-
-            <!-- Balance -->
             <div class="col-md-4 mb-3">
 
                 <div class="card shadow-sm">
@@ -106,8 +99,6 @@ $monthly_balance = $monthly_income - $monthly_expense;
 
         </div>
         <div class="row mt-3">
-
-            <!-- Monthly Income -->
 
             <div class="col-md-4 mb-3">
 
@@ -130,8 +121,6 @@ $monthly_balance = $monthly_income - $monthly_expense;
             </div>
 
 
-            <!-- Monthly Expense -->
-
             <div class="col-md-4 mb-3">
 
                 <div class="card shadow-sm">
@@ -152,8 +141,6 @@ $monthly_balance = $monthly_income - $monthly_expense;
 
             </div>
 
-
-            <!-- Monthly Balance -->
 
             <div class="col-md-4 mb-3">
 
@@ -177,7 +164,6 @@ $monthly_balance = $monthly_income - $monthly_expense;
 
         </div>
 
-        <!-- Action Buttons -->
         <div class="mt-4">
 
             <a href="add_transaction.php" class="btn btn-primary">

@@ -37,7 +37,6 @@ $transactions = $transactionService->getUserTransactions($userId, $search, $type
 
     <?php
 
-    // Use common header
     require_once "includes/header.php";
 
     ?>
@@ -76,9 +75,6 @@ $transactions = $transactionService->getUserTransactions($userId, $search, $type
 
         </div>
 
-
-        <!-- Search & Filter -->
-
         <div class="card shadow-sm mb-4">
 
             <div class="card-body">
@@ -86,8 +82,6 @@ $transactions = $transactionService->getUserTransactions($userId, $search, $type
                 <form method="GET">
 
                     <div class="row">
-
-                        <!-- Search -->
 
                         <div class="col-md-5 mb-2">
 
@@ -99,9 +93,6 @@ $transactions = $transactionService->getUserTransactions($userId, $search, $type
                                 value="<?php echo htmlspecialchars($search); ?>">
 
                         </div>
-
-
-                        <!-- Type -->
 
                         <div class="col-md-3 mb-2">
 
@@ -137,9 +128,6 @@ $transactions = $transactionService->getUserTransactions($userId, $search, $type
 
                         </div>
 
-
-                        <!-- Search button -->
-
                         <div class="col-md-2 mb-2">
 
                             <button
@@ -149,9 +137,6 @@ $transactions = $transactionService->getUserTransactions($userId, $search, $type
                             </button>
 
                         </div>
-
-
-                        <!-- Reset -->
 
                         <div class="col-md-2 mb-2">
 
@@ -170,9 +155,6 @@ $transactions = $transactionService->getUserTransactions($userId, $search, $type
             </div>
 
         </div>
-
-
-        <!-- Transaction Table -->
 
         <div class="card shadow-sm">
 

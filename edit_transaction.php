@@ -104,8 +104,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         <form method="POST">
 
-                            <!-- Type -->
-
                             <div class="mb-3">
 
                                 <label class="form-label">
@@ -142,8 +140,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
 
 
-                            <!-- Category -->
-
                             <div class="mb-3">
 
                                 <label class="form-label">
@@ -158,9 +154,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     required>
 
                             </div>
-
-
-                            <!-- Amount -->
 
                             <div class="mb-3">
 
@@ -180,8 +173,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
 
 
-                            <!-- Description -->
-
                             <div class="mb-3">
 
                                 <label class="form-label">
@@ -195,8 +186,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                             </div>
 
-
-                            <!-- Date -->
 
                             <div class="mb-3">
 
